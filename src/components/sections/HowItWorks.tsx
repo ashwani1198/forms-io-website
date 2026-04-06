@@ -237,6 +237,7 @@ function VideoPlayer() {
               muted={muted}
               playsInline
               preload="metadata"
+              onLoadedMetadata={() => setLoaded(true)}
               onCanPlay={() => setLoaded(true)}
               className="w-full h-full object-cover"
             />
