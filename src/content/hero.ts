@@ -8,7 +8,7 @@ export const heroData: HeroData = {
   primaryCta: "Start building free",
   secondaryCta: "See how it works",
   features: [
-    { label: "18+ question types including file upload & ratings" },
+    { label: "question types including file upload & ratings" },
     { label: "Conditional logic with jump, show & hide rules" },
     { label: "Webhooks with custom key mapping & retry logic" },
   ],

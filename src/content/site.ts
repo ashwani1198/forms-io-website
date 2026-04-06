@@ -1,11 +1,14 @@
 import type { SiteConfig, NavLink, FooterColumn } from "@/content/types";
 
+/** Swap this one line to change the demo video everywhere on the site */
+export const DEMO_VIDEO_SRC = "/hero-io.mp4";
+
 export const siteConfig: SiteConfig = {
   name: "FormsIO",
   tagline: "Build Beautiful Forms Without Code",
   description:
     "FormsIO is an AI powered no code drag-and-drop form builder that helps you create stunning, responsive forms with advanced features in minutes, not hours.",
-  url: "https://formsio.io",
+  url: "https://forms-io-website.vercel.app/",
 };
 
 export const navLinks: NavLink[] = [
