@@ -41,7 +41,7 @@ export default function QuestionTypes() {
               Question Types
           </span>
             <h2 className="heading-display text-3xl sm:text-4xl font-bold text-foreground tracking-tight">
-              18+ powerful input types
+              powerful input types
           </h2>
           </div>
           <p className="text-sm text-muted-foreground max-w-xs leading-relaxed">
