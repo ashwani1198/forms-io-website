@@ -109,6 +109,13 @@ function VideoPlayer() {
   const [current, setCurrent] = useState(0);
   const [hovered, setHovered] = useState(false);
 
+  // iOS Safari ignores preload and won't fire video events until user taps.
+  // Fall back to showing the player after 1.5 s so the skeleton never hangs.
+  useEffect(() => {
+    const timer = setTimeout(() => setLoaded(true), 1500);
+    return () => clearTimeout(timer);
+  }, []);
+
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
@@ -236,7 +243,7 @@ function VideoPlayer() {
               src={DEMO_VIDEO_SRC}
               muted={muted}
               playsInline
-              preload="metadata"
+              preload="auto"
               onLoadedMetadata={() => setLoaded(true)}
               onCanPlay={() => setLoaded(true)}
               className="w-full h-full object-cover"

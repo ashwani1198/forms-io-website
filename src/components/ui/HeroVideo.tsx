@@ -31,6 +31,7 @@ export function HeroVideo({
       loop
       playsInline
       preload="auto"
+      onLoadedMetadata={() => setLoaded(true)}
       onCanPlay={() => setLoaded(true)}
       style={{ display: "block", width: "100%", height: "100%", objectFit: "cover" }}
     />
