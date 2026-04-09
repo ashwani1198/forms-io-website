@@ -1,11 +1,10 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
 import { DEMO_VIDEO_SRC } from "@/content/site";
 
-/* ── HeroVideo ───────────────────────────────────────────────────────────── */
 interface HeroVideoProps {
   withFrame?: boolean;
   className?: string;
@@ -22,7 +21,41 @@ export function HeroVideo({
   const videoRef = useRef<HTMLVideoElement>(null);
   const [loaded, setLoaded] = useState(false);
 
-  const video = (
+  useEffect(() => {
+    const el = videoRef.current;
+    if (!el) return;
+
+    // iOS requires muted set via JS, not just the HTML attribute
+    el.muted = true;
+
+    let fired = false;
+    const onReady = () => {
+      if (fired) return;
+      fired = true;
+      setLoaded(true);
+      el.play().catch(() => {
+        setTimeout(() => el.play().catch(() => {}), 800);
+      });
+    };
+
+    if (el.readyState >= 2) {
+      onReady();
+    } else {
+      // loadeddata fires earlier and more reliably on iOS than canplay
+      el.addEventListener("loadeddata", onReady, { once: true });
+      el.addEventListener("canplay",    onReady, { once: true });
+    }
+
+    // iOS ignores preload — explicitly trigger network fetch
+    el.load();
+
+    return () => {
+      el.removeEventListener("loadeddata", onReady);
+      el.removeEventListener("canplay",    onReady);
+    };
+  }, []);
+
+  const videoEl = (
     <video
       ref={videoRef}
       src={DEMO_VIDEO_SRC}
@@ -31,8 +64,7 @@ export function HeroVideo({
       loop
       playsInline
       preload="auto"
-      onLoadedMetadata={() => setLoaded(true)}
-      onCanPlay={() => setLoaded(true)}
+      {...{ "webkit-playsinline": "" }}
       style={{ display: "block", width: "100%", height: "100%", objectFit: "cover" }}
     />
   );
@@ -40,7 +72,7 @@ export function HeroVideo({
   if (!withFrame) {
     return (
       <div className={cn("relative overflow-hidden rounded-2xl", className)}>
-        {video}
+        {videoEl}
         {badgeBottom}
         {badgeTop}
       </div>
@@ -49,12 +81,11 @@ export function HeroVideo({
 
   return (
     <div className={cn("relative", className)}>
-      {/* Outer wrapper sets the aspect ratio — video always mounted inside */}
       <div
         className="relative w-full rounded-2xl overflow-hidden border border-white/[0.07]"
         style={{ background: "#0c1321", boxShadow: "0 40px 80px rgba(0,0,0,0.55)" }}
       >
-        {/* Title bar — real chrome, always visible */}
+        {/* Chrome bar */}
         <div
           className="flex items-center gap-2 px-4 py-2.5 border-b border-white/[0.05]"
           style={{ background: "#111827" }}
@@ -81,9 +112,8 @@ export function HeroVideo({
           </motion.span>
         </div>
 
-        {/* Video container — padding-bottom trick for 16:9 */}
+        {/* 16:9 video container */}
         <div style={{ position: "relative", paddingBottom: "56.25%", height: 0, overflow: "hidden" }}>
-          {/* Skeleton overlaid — fades out when video ready */}
           <AnimatePresence>
             {!loaded && (
               <motion.div
@@ -94,7 +124,6 @@ export function HeroVideo({
                 transition={{ duration: 0.4 }}
                 style={{ background: "var(--surface-lowest)" }}
               >
-                {/* Shimmer sweep */}
                 <motion.div
                   className="absolute inset-0"
                   style={{
@@ -104,7 +133,6 @@ export function HeroVideo({
                   animate={{ x: ["-100%", "100%"] }}
                   transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
                 />
-                {/* Ghost play */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
                   <div className="w-14 h-14 rounded-full border border-white/[0.08] bg-white/[0.04] flex items-center justify-center">
                     <svg className="w-5 h-5 text-white/15 ml-0.5" fill="currentColor" viewBox="0 0 24 24">
@@ -114,7 +142,10 @@ export function HeroVideo({
                   <div className="relative overflow-hidden rounded-full bg-white/[0.06] h-2 w-24">
                     <motion.div
                       className="absolute inset-0"
-                      style={{ background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.07) 50%, transparent 100%)" }}
+                      style={{
+                        background:
+                          "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.07) 50%, transparent 100%)",
+                      }}
                       animate={{ x: ["-100%", "100%"] }}
                       transition={{ repeat: Infinity, duration: 1.6, ease: "linear" }}
                     />
@@ -124,38 +155,14 @@ export function HeroVideo({
             )}
           </AnimatePresence>
 
-          {/* Video — always mounted, loads in background */}
           <div style={{ position: "absolute", inset: 0 }}>
-            {video}
+            {videoEl}
           </div>
         </div>
       </div>
 
-      {/* Badges fade in after load */}
-      <AnimatePresence>
-        {loaded && badgeBottom && (
-          <motion.div
-            key="badge-bottom"
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.4 }}
-          >
-            {badgeBottom}
-          </motion.div>
-        )}
-      </AnimatePresence>
-      <AnimatePresence>
-        {loaded && badgeTop && (
-          <motion.div
-            key="badge-top"
-            initial={{ opacity: 0, y: -6 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 0.4 }}
-          >
-            {badgeTop}
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {badgeBottom}
+      {badgeTop}
     </div>
   );
 }
